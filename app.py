@@ -2,7 +2,7 @@ import glob, os
 os.chdir("./reports")
 files = glob.glob("most_utilized_folders_by_usage_*.csv")
 
-
+# get router locations from google maps---this isn't working yet
 def get_router_locations():
     from geopy.geocoders import GoogleV3
     google_keys = [
@@ -34,6 +34,7 @@ def get_router_locations():
         w = csv.writer(f)
         w.writerows(locations.items())
 
+# remapping function for building coordinates to 18x18 grid
 import math
 def remap(x, y):
     ppi = 72
@@ -43,14 +44,14 @@ def remap(x, y):
     ay = math.floor(y / gridlines)
     return ax, ay
 
+# create a list of date times to index/key our list of data frames
 import datetime as dt
 # generate list of times as keys
 base = dt.datetime(2017, 5, 5, 2) # Y, M, D, H
 date_list = [base + dt.timedelta(hours = 2 * x) for x in range(0, len(files))]
 tstamps = [d.strftime("%m%d%H") for d in date_list]
 
-# print(tstamps)
-
+# import all the data as pandas data frames indexed by date time
 reports = {}
 
 import pandas as pd
@@ -60,10 +61,13 @@ for i in range(0, len(files)):
 router_names = reports[tstamps[0]]['Folder']
 print(router_names)
 
+# load our known locations
 locations = pd.read_csv(glob.glob("locations_map.csv")[0])
 
+# get router locations if we're using google maps---not working yet
 # get_router_locations()
 
+# Load the location of a router in the data if we have a known location on our map
 for name in router_names:
     # print(name)
     if (name == 'Top'):
