@@ -57,13 +57,22 @@ import pandas as pd
 for i in range(0, len(files)):
     reports[tstamps[i]] = pd.read_csv(files[i])
 
-import csv
-reader = csv.reader(open('locations_map.csv', 'r'))
-locations = {}
-for row in reader:
-    key, value = row
-    locations[key] = value
+router_names = reports[tstamps[0]]['Folder']
+print(router_names)
 
-print(locations)
+locations = pd.read_csv(glob.glob("locations_map.csv")[0])
+
 # get_router_locations()
-print(remap(155.11, 153.75))
+
+for name in router_names:
+    # print(name)
+    if (name == 'Top'):
+        continue # edge case where there is no carrot
+    strip_name = name.split('> ', 1)[1]
+    strip_name = strip_name.replace(' >', '')
+    if not locations[locations['building'].str.contains(strip_name)].empty:
+        building = locations[locations['building'].str.contains(strip_name)]
+        # print(building['x'], building['y'])
+        print(building)
+
+# print(remap(locations['x'][0], locations['y'][0]))
