@@ -1,6 +1,6 @@
 import glob, os
 import random # choosing a key randomly
-from geopy.geocoders import GoogleV3
+# from geopy.geocoders import GoogleV3
 import csv
 import math
 import datetime as dt
@@ -219,6 +219,49 @@ def save_animation():
                 r = ratio - midpoint * booster
             pixels[y][x] = [r, g, b]
         anim_txt.write("%s\n\n" % pixels)
+
+def save_animation2():
+    anim_txt = open('animation.txt', 'w')
+    for n in range(0, len(tstamps)):
+        # bounds
+        num_buildings = 97
+
+        # init empty pixel array
+        pixels = []
+        col = []
+        for i in range(num_buildings):        
+            col.append([0,0,0,0,0])
+            pixels.append(col)
+
+        for index, row in dfms[tstamps[n]].iterrows():
+            x = row['x'].astype(int)
+            y = row['y'].astype(int)
+            k = row['clients'] # magnitude
+            if k != 0:
+                ratio = rescale(k)
+                booster = 1.5
+                midpoint = 0.25
+                print(ratio)
+                if ratio < midpoint:
+                    b = ratio * 4 * booster
+                    g = 0.1 * ratio * booster
+                    r = 0 * booster
+                else:
+                    b = 0 * booster
+                    g = 0.1 * ratio * booster
+                    r = ratio - midpoint * booster
+                pixels[y][x] = [x, y, r, g, b]
+        anim_txt.write("%s\n\n" % pixels)
+
+
+# def makeTextFile():
+    # t = 44
+    # b = 97
+    # v = 5
+    # values = [[[0 for k in xrange(t)] for j in xrange(b)] for i in xrange(5)]
+    # for i in range(44):
+    #     for j in range(97):
+    #         for k in range(5):
 
 def main():
     # setup from data
