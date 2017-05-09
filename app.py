@@ -1,16 +1,24 @@
 import glob, os
+import random # choosing a key randomly
+from geopy.geocoders import GoogleV3
+import csv
+import math
+import datetime as dt
+import pandas as pd
+import numpy as np
+
 os.chdir("./reports")
 files = glob.glob("most_utilized_folders_by_usage_*.csv")
 
 # get router locations from google maps---this isn't working yet
 def get_router_locations():
-    from geopy.geocoders import GoogleV3
+    
     google_keys = [
         'AIzaSyDFNq0sdWuTb1OPZKI8_pzptX4bK7WBDcY',
         'AIzaSyBOAiq7lqzOVSH8PtYtG80DqjP2Y2LpNLM',
         'AIzaSyAacHXIDCNV6ptUDPQRdsHqNyQZRJu8k1A'
         ]
-    import random # choosing a key randomly
+    
 
     locations = {}
 
@@ -29,13 +37,11 @@ def get_router_locations():
             locations[strip_name].append(0.0)
             locations[strip_name].append(0.0)
 
-    import csv
     with open('locations.csv', 'w') as f:
         w = csv.writer(f)
         w.writerows(locations.items())
 
 # remapping function for building coordinates to 18x18 grid
-import math
 def remap(x, y):
     ppi = 72
     wh = 23.4
@@ -85,7 +91,6 @@ def dancefloor_makeouts():
     print(dfms)
 
 # create a list of date times to index/key our list of data frames
-import datetime as dt
 # generate list of times as keys
 base = dt.datetime(2017, 5, 5, 2) # Y, M, D, H
 date_list = [base + dt.timedelta(hours = 2 * x) for x in range(0, len(files))]
@@ -93,9 +98,6 @@ tstamps = [d.strftime("%m%d%H") for d in date_list]
 
 # import all the data as pandas data frames indexed by date time
 reports = {}
-
-import pandas as pd
-import numpy as np
 
 for i in range(0, len(files)):
     reports[tstamps[i]] = pd.read_csv(files[i])
