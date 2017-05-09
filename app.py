@@ -107,6 +107,7 @@ for date in tstamps:
 print(max_clients)
 print(dfms)
 
+
 # rescale to range function
 from scipy.interpolate import interp1d
 max_pixel_value = 1.0
@@ -124,3 +125,39 @@ c = np.dstack([r,g,b])
 
 plt.imshow(c, interpolation='nearest')
 plt.show()
+
+# print(mappings['050816'])
+
+def toRGB(pop, max_pop):
+    ratio = pop/max_pop
+    if ratio < .5:
+        r = (.5-ratio)*510
+        g = ratio*510
+        b = 0
+    else:
+        r = 0
+        g = (.5-(ratio-.5))*510
+        b = (ratio-.5)*510
+
+def toR(pop, max_pop):
+    ratio = pop/max_pop
+    if ratio < .5:
+        r = (.5-ratio)*510
+    else:
+        r = 0
+    return r
+
+def toG(pop, max_pop):
+    ratio = pop/max_pop
+    if ratio < .5:
+        g = ratio*510
+    else:
+        g = (.5-(ratio-.5))*510
+
+def toB(pop, max_pop):
+    ratio = pop/max_pop
+    if ratio < .5:
+        b = 0
+    else:
+        b = (ratio-.5)*510
+    return b
