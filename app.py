@@ -1,11 +1,14 @@
 import glob, os
 import random # choosing a key randomly
-from geopy.geocoders import GoogleV3
 import csv
 import math
 import datetime as dt
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from geopy.geocoders import GoogleV3
+
+
 
 os.chdir("./reports")
 files = glob.glob("most_utilized_folders_by_usage_*.csv")
@@ -121,7 +124,7 @@ locations = pd.read_csv(glob.glob("locations_map.csv")[0])
 
 pixels = [[],[]]
 
-import matplotlib.pyplot as plt
+
 # Make some random data to represent your r, g, b bands.
 ny, nx = 18, 18
 
