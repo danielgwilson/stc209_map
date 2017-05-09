@@ -103,10 +103,11 @@ def dancefloor_makeouts():
         if max(df['clients']) > max_clients:
             max_clients = max(df['clients'])
 
-    print(max_clients)
     print(dfms)
+    print(max_clients)
 
     return dfms, (max_clients)
+
 
 def toRGB(pop, max_pop):
     ratio = pop/max_pop
