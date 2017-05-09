@@ -71,7 +71,6 @@ locations = pd.read_csv(glob.glob("locations_map.csv")[0])
 
 # Load the location of a router in the data if we have a known location on our map
 # Also attach intensities here
-
 dfms = {}
 max_clients = 0.0
 
@@ -107,4 +106,21 @@ for date in tstamps:
 
 print(max_clients)
 print(dfms)
-# print(mappings['050816'])
+
+# rescale to range function
+from scipy.interpolate import interp1d
+max_pixel_value = 1.0
+rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
+
+pixels = [[],[]]
+
+print(dfms['050816'])
+import matplotlib.pyplot as plt
+# Make some random data to represent your r, g, b bands.
+ny, nx = 18, 18
+r, g, b = [np.random.random(ny*nx).reshape((ny, nx)) for _ in range(3)]
+
+c = np.dstack([r,g,b])
+
+plt.imshow(c, interpolation='nearest')
+plt.show()
