@@ -171,14 +171,14 @@ def main():
             col.append([0,0,0])
         pixels.append(col)
 
-    # for index, row in dfms['050602'].iterrows():
-    #     x = row['x']
-    #     y = row['y']
-    #     k = row['clients'] # magnitude
-    #     pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
-    #
-    # plt.imshow(pixels, interpolation='nearest')
-    # plt.show()
+    for index, row in dfms['050602'].iterrows():
+        x = row['x'].astype(int)
+        y = row['y'].astype(int)
+        k = row['clients'] # magnitude
+        pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
+
+    plt.imshow(pixels, interpolation='nearest')
+    plt.show()
 
 if __name__ == "__main__":
     main()
