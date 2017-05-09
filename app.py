@@ -10,18 +10,15 @@ from geopy.geocoders import GoogleV3
 
 
 
-os.chdir("./reports")
-files = glob.glob("most_utilized_folders_by_usage_*.csv")
-
 # get router locations from google maps---this isn't working yet
 def get_router_locations():
-    
+
     google_keys = [
         'AIzaSyDFNq0sdWuTb1OPZKI8_pzptX4bK7WBDcY',
         'AIzaSyBOAiq7lqzOVSH8PtYtG80DqjP2Y2LpNLM',
         'AIzaSyAacHXIDCNV6ptUDPQRdsHqNyQZRJu8k1A'
         ]
-    
+
 
     locations = {}
 
@@ -54,6 +51,25 @@ def remap(x, y):
     return [ax, ay]
 
 def dancefloor_makeouts():
+    os.chdir("./reports")
+    files = glob.glob("most_utilized_folders_by_usage_*.csv")
+
+    base = dt.datetime(2017, 5, 5, 2) # Y, M, D, H
+    date_list = [base + dt.timedelta(hours = 2 * x) for x in range(0, len(files))]
+    tstamps = [d.strftime("%m%d%H") for d in date_list]
+
+    # import all the data as pandas data frames indexed by date time
+    reports = {}
+
+    for i in range(0, len(files)):
+        reports[tstamps[i]] = pd.read_csv(files[i])
+
+    # get router locations if we're using google maps---not working yet
+    # get_router_locations()
+
+    # load our known locations
+    locations = pd.read_csv(glob.glob("locations_map.csv")[0])
+
     # dfms is short for dataframes
     # Load the location of a router in the data if we have a known location on our map
     # Also attach intensities here
@@ -90,50 +106,8 @@ def dancefloor_makeouts():
         if max(df['clients']) > max_clients:
             max_clients = max(df['clients'])
 
-    print(max_clients)
-    print(dfms)
+    print(dfms, (max_clients))
 
-# create a list of date times to index/key our list of data frames
-# generate list of times as keys
-base = dt.datetime(2017, 5, 5, 2) # Y, M, D, H
-date_list = [base + dt.timedelta(hours = 2 * x) for x in range(0, len(files))]
-tstamps = [d.strftime("%m%d%H") for d in date_list]
-
-# import all the data as pandas data frames indexed by date time
-reports = {}
-
-for i in range(0, len(files)):
-    reports[tstamps[i]] = pd.read_csv(files[i])
-
-# router_names = reports[tstamps[0]]['Folder']
-# print(router_names)
-
-# load our known locations
-locations = pd.read_csv(glob.glob("locations_map.csv")[0])
-
-# get router locations if we're using google maps---not working yet
-# get_router_locations()
-
-# dancefloor_makeouts()
-
-
-# rescale to range function
-# from scipy.interpolate import interp1d
-# max_pixel_value = 1.0
-# rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
-
-pixels = [[],[]]
-
-
-# Make some random data to represent your r, g, b bands.
-ny, nx = 18, 18
-
-
-
-plt.imshow([[[1,1,1],[0,0,0]],[[0,0,0],[1,1,1]]], interpolation='nearest')
-plt.show()
-
-# print(mappings['050816'])
 
 def toRGB(pop, max_pop):
     ratio = pop/max_pop
@@ -168,3 +142,44 @@ def toB(pop, max_pop):
     else:
         b = (ratio-.5)*510
     return b
+
+
+def main():
+    # create a list of date times to index/key our list of data frames
+    # generate list of times as keys
+
+    dfms, max_clients = dancefloor_makeouts()
+
+
+    import matplotlib.pyplot as plt
+    # Make some random data to represent your r, g, b bands.
+    ny, nx = 18, 18
+
+    # rescale to range function
+    from scipy.interpolate import interp1d
+    max_pixel_value = 1.0
+    rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
+
+    pixels = []
+
+    import matplotlib.pyplot as plt
+    # Make some random data to represent your r, g, b bands.
+    ny, nx = 18, 18
+
+    for i in range(1, nx):
+        col = []
+        for j in range(1, ny):
+            col.append([0,0,0])
+        pixels.append(col)
+
+    # for index, row in dfms['050602'].iterrows():
+    #     x = row['x']
+    #     y = row['y']
+    #     k = row['clients'] # magnitude
+    #     pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
+    #
+    # plt.imshow(pixels, interpolation='nearest')
+    # plt.show()
+
+if __name__ == "__main__":
+    main()
