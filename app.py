@@ -164,14 +164,25 @@ def animate(n):
     for i in range(0, nx):
         col = []
         for j in range(0, ny):
-            col.append([0,0,0])
+            col.append([0,1,1])
         pixels.append(col)
 
     for index, row in dfms[tstamps[n]].iterrows():
         x = row['x'].astype(int)
         y = row['y'].astype(int)
         k = row['clients'] # magnitude
-        pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
+        ratio = rescale(k)
+        midpoint = 0.4
+        print(ratio)
+        if ratio < midpoint:
+            b = ratio
+            g = 1
+            r = 0
+        else:
+            b = 0
+            g = 1
+            r = ratio - midpoint
+        pixels[y][x] = [r, g, b]
 
     im.set_array(pixels)
 
@@ -192,7 +203,7 @@ def main():
     # rescale to range function
     from scipy.interpolate import interp1d
     max_pixel_value = 1.0
-    rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
+    rescale = interp1d([0.0, 300], [0.0, max_pixel_value], bounds_error = False, fill_value = 'extrapolate')
 
     # for n in range(0, len(tstamps)):
     # bounds
@@ -203,18 +214,11 @@ def main():
     for i in range(0, nx):
         col = []
         for j in range(0, ny):
-            col.append([0,0,0])
+            col.append([0,0.5,0.5])
         pixels.append(col)
 
-    for index, row in dfms[tstamps[0]].iterrows():
-        x = row['x'].astype(int)
-        y = row['y'].astype(int)
-        # print(x, y)
-        k = row['clients'] # magnitude
-        pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
-
     fig = plt.figure()
-    im = plt.imshow(pixels, interpolation='nearest', animated = True)
+    im = plt.imshow(pixels, interpolation='hanning', animated = True)
     ani = animation.FuncAnimation(fig, animate, interval = 650)
     plt.show()
 
