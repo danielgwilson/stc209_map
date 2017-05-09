@@ -4,8 +4,14 @@ from geopy.geocoders import GoogleV3
 import csv
 import math
 import datetime as dt
+
 import pandas as pd
 import numpy as np
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+import time
 
 # get router locations from google maps---this isn't working yet
 def get_router_locations():
@@ -48,6 +54,8 @@ def remap(x, y):
     return [ax, ay]
 
 def dancefloor_makeouts():
+    # create a list of date times to index/key our list of data frames
+    # generate list of times as keys
     os.chdir("./reports")
     files = glob.glob("most_utilized_folders_by_usage_*.csv")
 
@@ -103,10 +111,7 @@ def dancefloor_makeouts():
         if max(df['clients']) > max_clients:
             max_clients = max(df['clients'])
 
-    print(dfms)
-    print(max_clients)
-
-    return dfms, (max_clients)
+    return dfms, (max_clients), (tstamps)
 
 
 def toRGB(pop, max_pop):
@@ -143,14 +148,43 @@ def toB(pop, max_pop):
         b = (ratio-.5)*510
     return b
 
+# globals defined for the sake of animation
+dfms = {}
+tstamps = []
+rescale = None
+im = None
+def animate(n):
+    n = n % len(tstamps) # allows animation to loop
+
+    # bounds
+    ny, nx = 18, 18
+
+    # init empty pixel array
+    pixels = []
+    for i in range(0, nx):
+        col = []
+        for j in range(0, ny):
+            col.append([0,0,0])
+        pixels.append(col)
+
+    for index, row in dfms[tstamps[n]].iterrows():
+        x = row['x'].astype(int)
+        y = row['y'].astype(int)
+        k = row['clients'] # magnitude
+        pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
+
+    im.set_array(pixels)
 
 def main():
-    # create a list of date times to index/key our list of data frames
-    # generate list of times as keys
+    # setup from data
+    global tstamps, dfms, rescale, im
+    dfms, max_clients, tstamps = dancefloor_makeouts()
 
-    dfms, max_clients = dancefloor_makeouts()
+    # -----------------
+    # ANIMATION TESTING
+    # -----------------
 
-
+    # Pixel field testing
     import matplotlib.pyplot as plt
     # Make some random data to represent your r, g, b bands.
     ny, nx = 18, 18
@@ -160,25 +194,28 @@ def main():
     max_pixel_value = 1.0
     rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
 
-    pixels = []
-
-    import matplotlib.pyplot as plt
-    # Make some random data to represent your r, g, b bands.
+    # for n in range(0, len(tstamps)):
+    # bounds
     ny, nx = 18, 18
 
-    for i in range(1, nx):
+    # init empty pixel array
+    pixels = []
+    for i in range(0, nx):
         col = []
-        for j in range(1, ny):
+        for j in range(0, ny):
             col.append([0,0,0])
         pixels.append(col)
 
-    for index, row in dfms['050602'].iterrows():
+    for index, row in dfms[tstamps[0]].iterrows():
         x = row['x'].astype(int)
         y = row['y'].astype(int)
+        # print(x, y)
         k = row['clients'] # magnitude
         pixels[x][y] = [rescale(k), rescale(k), rescale(k)]
 
-    plt.imshow(pixels, interpolation='nearest')
+    fig = plt.figure()
+    im = plt.imshow(pixels, interpolation='nearest', animated = True)
+    ani = animation.FuncAnimation(fig, animate, interval = 650)
     plt.show()
 
 if __name__ == "__main__":
