@@ -44,6 +44,46 @@ def remap(x, y):
     ay = math.floor(y / gridlines)
     return [ax, ay]
 
+def dancefloor_makeouts():
+    # dfms is short for dataframes
+    # Load the location of a router in the data if we have a known location on our map
+    # Also attach intensities here
+    dfms = {}
+    max_clients = 0.0
+
+    for date in tstamps:
+        print(date)
+        report = reports[date]
+
+        # create data frame for date
+        mappings = {}
+        router_names = report['Folder']
+        for name in router_names:
+            # print(name)
+            if (name == 'Top' or name == 'Top > 20 Washington Road (Old Frick)'):
+                continue # edge case where there is no carrot and where parens mess it up
+            strip_name = name.split('> ', 1)[1]
+            strip_name = strip_name.replace(' >', '')
+            if not locations[locations['building'].str.match(strip_name)].empty:
+                building = locations[locations['building'].str.match(strip_name)]
+                mapping = remap(np.unwrap(building['x']), np.unwrap(building['y']))
+                # print(building['x'], building['y'])
+                router = report[report['Folder'].str.match(name)]
+                clients = np.unwrap(router['Unique Clients'])[0]
+                mappings[strip_name] = {}
+                mappings[strip_name]['x'] = mapping[0]
+                mappings[strip_name]['y'] = mapping[1]
+                mappings[strip_name]['clients'] = clients
+                # print('%-28s : %-8s : %-s' %
+                #     (strip_name, str(mapping), str(clients)))
+        df = pd.DataFrame(mappings).transpose()
+        dfms[date] = df
+        if max(df['clients']) > max_clients:
+            max_clients = max(df['clients'])
+
+    print(max_clients)
+    print(dfms)
+
 # create a list of date times to index/key our list of data frames
 import datetime as dt
 # generate list of times as keys
@@ -69,61 +109,23 @@ locations = pd.read_csv(glob.glob("locations_map.csv")[0])
 # get router locations if we're using google maps---not working yet
 # get_router_locations()
 
-# Load the location of a router in the data if we have a known location on our map
-# Also attach intensities here
-dfms = {}
-max_clients = 0.0
-
-for date in tstamps:
-    print(date)
-    report = reports[date]
-
-    # create data frame for date
-    mappings = {}
-    router_names = report['Folder']
-    for name in router_names:
-        # print(name)
-        if (name == 'Top' or name == 'Top > 20 Washington Road (Old Frick)'):
-            continue # edge case where there is no carrot and where parens mess it up
-        strip_name = name.split('> ', 1)[1]
-        strip_name = strip_name.replace(' >', '')
-        if not locations[locations['building'].str.match(strip_name)].empty:
-            building = locations[locations['building'].str.match(strip_name)]
-            mapping = remap(np.unwrap(building['x']), np.unwrap(building['y']))
-            # print(building['x'], building['y'])
-            router = report[report['Folder'].str.match(name)]
-            clients = np.unwrap(router['Unique Clients'])[0]
-            mappings[strip_name] = {}
-            mappings[strip_name]['x'] = mapping[0]
-            mappings[strip_name]['y'] = mapping[1]
-            mappings[strip_name]['clients'] = clients
-            # print('%-28s : %-8s : %-s' %
-            #     (strip_name, str(mapping), str(clients)))
-    df = pd.DataFrame(mappings).transpose()
-    dfms[date] = df
-    if max(df['clients']) > max_clients:
-        max_clients = max(df['clients'])
-
-print(max_clients)
-print(dfms)
+# dancefloor_makeouts()
 
 
 # rescale to range function
-from scipy.interpolate import interp1d
-max_pixel_value = 1.0
-rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
+# from scipy.interpolate import interp1d
+# max_pixel_value = 1.0
+# rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value])
 
 pixels = [[],[]]
 
-print(dfms['050816'])
 import matplotlib.pyplot as plt
 # Make some random data to represent your r, g, b bands.
 ny, nx = 18, 18
-r, g, b = [np.random.random(ny*nx).reshape((ny, nx)) for _ in range(3)]
 
-c = np.dstack([r,g,b])
 
-plt.imshow(c, interpolation='nearest')
+
+plt.imshow([[[1,1,1],[0,0,0]],[[0,0,0],[1,1,1]]], interpolation='nearest')
 plt.show()
 
 # print(mappings['050816'])
