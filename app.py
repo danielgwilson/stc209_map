@@ -164,7 +164,7 @@ def animate(n):
     for i in range(0, nx):
         col = []
         for j in range(0, ny):
-            col.append([0,1,1])
+            col.append([0,0,0])
         pixels.append(col)
 
     for index, row in dfms[tstamps[n]].iterrows():
@@ -172,19 +172,53 @@ def animate(n):
         y = row['y'].astype(int)
         k = row['clients'] # magnitude
         ratio = rescale(k)
-        midpoint = 0.4
+        booster = 1.5
+        midpoint = 0.25
         print(ratio)
         if ratio < midpoint:
-            b = ratio
-            g = 1
-            r = 0
+            b = ratio * 4 * booster
+            g = 0.1 * ratio * booster
+            r = 0 * booster
         else:
-            b = 0
-            g = 1
-            r = ratio - midpoint
+            b = 0 * booster
+            g = 0.1 * ratio * booster
+            r = ratio - midpoint * booster
         pixels[y][x] = [r, g, b]
 
     im.set_array(pixels)
+
+def save_animation():
+    anim_txt = open('animation.txt', 'w')
+    for n in range(0, len(tstamps)):
+        # bounds
+        ny, nx = 18, 18
+
+        # init empty pixel array
+        pixels = []
+        for i in range(0, nx):
+            col = []
+            for j in range(0, ny):
+                col.append([0,0,0])
+            pixels.append(col)
+
+        for index, row in dfms[tstamps[n]].iterrows():
+            x = row['x'].astype(int)
+            y = row['y'].astype(int)
+            k = row['clients'] # magnitude
+            ratio = rescale(k)
+            booster = 1.5
+            midpoint = 0.25
+            print(ratio)
+            if ratio < midpoint:
+                b = ratio * 4 * booster
+                g = 0.1 * ratio * booster
+                r = 0 * booster
+            else:
+                b = 0 * booster
+                g = 0.1 * ratio * booster
+                r = ratio - midpoint * booster
+            pixels[y][x] = [r, g, b]
+        anim_txt.write("%s\n\n" % pixels)
 
 def main():
     # setup from data
@@ -203,8 +237,9 @@ def main():
     # rescale to range function
     from scipy.interpolate import interp1d
     max_pixel_value = 1.0
-    rescale = interp1d([0.0, 300], [0.0, max_pixel_value], bounds_error = False, fill_value = 'extrapolate')
+    rescale = interp1d([0.0, max_clients], [0.0, max_pixel_value], bounds_error = False, fill_value = 'extrapolate')
 
+    # save_animation()
     # for n in range(0, len(tstamps)):
     # bounds
     ny, nx = 18, 18
@@ -218,7 +253,7 @@ def main():
         pixels.append(col)
 
     fig = plt.figure()
-    im = plt.imshow(pixels, interpolation='hanning', animated = True)
+    im = plt.imshow(pixels, interpolation='nearest', animated = True)
     ani = animation.FuncAnimation(fig, animate, interval = 650)
     plt.show()
 
